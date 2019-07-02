@@ -354,16 +354,12 @@ class Auth extends CI_Controller {
      */
     public function create_user() {
         $this->data['title'] = $this->lang->line('create_user_heading');
-
-        if (!$this->ion_auth->logged_in() || !$this->ion_auth->is_admin()) {
+		if (!$this->ion_auth->logged_in() || !$this->ion_auth->is_admin()) {
             redirect('auth', 'refresh');
         }
-
         $tables = $this->config->item('tables', 'ion_auth');
         $identity_column = $this->config->item('identity', 'ion_auth');
         $this->data['identity_column'] = $identity_column;
-
-        // validate form input
         $this->form_validation->set_rules('first_name', $this->lang->line('create_user_validation_fname_label'), 'trim|required');
         $this->form_validation->set_rules('last_name', $this->lang->line('create_user_validation_lname_label'), 'trim|required');
         if ($identity_column !== 'email') {
@@ -376,12 +372,10 @@ class Auth extends CI_Controller {
         $this->form_validation->set_rules('company', $this->lang->line('create_user_validation_company_label'), 'trim');
         $this->form_validation->set_rules('password', $this->lang->line('create_user_validation_password_label'), 'required|min_length[' . $this->config->item('min_password_length', 'ion_auth') . ']|matches[password_confirm]');
         $this->form_validation->set_rules('password_confirm', $this->lang->line('create_user_validation_password_confirm_label'), 'required');
-
         if ($this->form_validation->run() === TRUE) {
             $email = strtolower($this->input->post('email'));
             $identity = ($identity_column === 'email') ? $email : $this->input->post('identity');
             $password = $this->input->post('password');
-
             $additional_data = array(
                 'first_name' => $this->input->post('first_name'),
                 'last_name' => $this->input->post('last_name'),
@@ -390,15 +384,10 @@ class Auth extends CI_Controller {
             );
         }
         if ($this->form_validation->run() === TRUE && $this->ion_auth->register($identity, $password, $email, $additional_data)) {
-            // check to see if we are creating the user
-            // redirect them back to the admin page
             $this->session->set_flashdata('message', $this->ion_auth->messages());
             redirect("auth", 'refresh');
         } else {
-            // display the create user form
-            // set the flash data error message if there is one
             $this->data['message'] = (validation_errors() ? validation_errors() : ($this->ion_auth->errors() ? $this->ion_auth->errors() : $this->session->flashdata('message')));
-
             $this->data['first_name'] = array(
                 'name' => 'first_name',
                 'id' => 'first_name',
